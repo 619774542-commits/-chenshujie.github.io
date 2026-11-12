@@ -1,0 +1,2 @@
+/* Fail open: the original cover always survives a missing/slow animation module. */
+(()=>{try{const p=decodeURIComponent(location.pathname);const home=/\/(?:index\.html|开始浏览\.html)?$/.test(p);if(home&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&localStorage.getItem('portfolio-motion')!=='off'&&!sessionStorage.getItem('portfolio-opening-v4-seen')){document.documentElement.classList.add('opening-pending');setTimeout(()=>document.documentElement.classList.remove('opening-pending'),8000)}}catch{}})();

@@ -1,0 +1,16 @@
+(() => {
+'use strict';
+const main=document.querySelector('#main'),dialog=document.querySelector('#image-dialog'),scroller=document.querySelector('.image-scroll'),zoomImage=document.querySelector('#zoom-image');
+const figures=[...document.querySelectorAll('[data-page]')];const total=figures.length;let opener,lastPage=0,scheduled=false;
+// Migrate old single-page routes to genuine HTML documents. Native page anchors remain local.
+function legacyRoute(){const hash=location.hash;if(!hash.startsWith('#/'))return false;const p=hash.slice(2).split('/');let file='index.html',page=1;if(p[0]==='project'&&['luyi','jd','scifi','eastlake','jinghu','ai'].includes(p[1])){file='projects/'+p[1]+'.html';page=Math.max(1,parseInt(p[2],10)||1);}else if(p[0]==='about'){file='about.html';page=Math.max(1,parseInt(p[1],10)||1);}else if(p[0]==='work')file='works.html';else if(p[0]==='contact')file='contact.html';const script=[...document.scripts].find(s=>s.src.includes('/app.js'));const url=new URL(file,script.src);if(page>1)url.hash='page-'+page;location.replace(url.href);return true;}
+if(legacyRoute())return;
+function currentPage(){let page=1;const boundary=Math.min(innerHeight*.3,220);for(const figure of figures){if(figure.getBoundingClientRect().top<=boundary)page=Number(figure.dataset.page);}return page;}
+function updatePaging(){scheduled=false;const page=currentPage();lastPage=page;const count=document.querySelector('#counter');if(count)count.textContent=page+' / '+total;const prev=document.querySelector('#previous-page'),next=document.querySelector('#next-page');if(prev){prev.href='#page-'+Math.max(1,page-1);prev.setAttribute('aria-disabled',String(page===1));}if(next){next.href=page<total?'#page-'+(page+1):'works.html';next.textContent=page<total?'下一页 →':'返回目录 ↗';}}
+function requestUpdate(){if(!scheduled){scheduled=true;requestAnimationFrame(updatePaging);}}
+function showImage(a){if(!dialog||typeof dialog.showModal!=='function')return false;opener=a;zoomImage.src=a.href;zoomImage.alt=a.dataset.caption||'作品集原页';document.querySelector('#image-title').textContent=a.dataset.caption||document.title;scroller.classList.remove('full-size');dialog.showModal();return true;}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-zoom]');if(a&&showImage(a))e.preventDefault();});
+document.querySelector('#close-image')?.addEventListener('click',()=>dialog.close());document.querySelector('#zoom-toggle')?.addEventListener('click',()=>scroller.classList.toggle('full-size'));zoomImage?.addEventListener('click',()=>scroller.classList.toggle('full-size'));dialog?.addEventListener('close',()=>{zoomImage.removeAttribute('src');opener?.focus({preventScroll:true});});
+window.addEventListener('keydown',e=>{if(dialog?.open||document.querySelector('#scene-dialog')?.open||e.target.closest('input,textarea,select,summary,button'))return;if(e.key==='ArrowRight'&&total>1&&lastPage<total){e.preventDefault();location.hash='page-'+(lastPage+1);}if(e.key==='ArrowLeft'&&total>1&&lastPage>1){e.preventDefault();location.hash='page-'+(lastPage-1);}});
+window.addEventListener('scroll',requestUpdate,{passive:true});window.addEventListener('resize',requestUpdate);window.addEventListener('hashchange',()=>{if(!legacyRoute())requestUpdate();});window.addEventListener('load',requestUpdate);updatePaging();
+})();
