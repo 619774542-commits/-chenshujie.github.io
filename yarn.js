@@ -5,6 +5,7 @@ const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelect
 const script=[...document.scripts].find(s=>s.src.includes('/yarn.js'));
 if(!script)return;
 const root=new URL('.',script.src), data=JSON.parse($('#journey-data')?.textContent||'{}');
+if(data.kind==='contact'){try{sessionStorage.removeItem('portfolio-yarn-handoff-v3')}catch{}document.documentElement.classList.remove('yarn-arriving');return;}
 const HANDOFF='portfolio-yarn-handoff-v3', RETURN='portfolio-yarn-return-v3', SEEN='portfolio-yarn-seen-v3';
 const ids=['luyi','jd','scifi','eastlake','ai','jinghu'];
 const read=(key)=>{try{return JSON.parse(sessionStorage.getItem(key)||'null')}catch{return null}};
@@ -212,6 +213,7 @@ document.addEventListener('click',event=>{
  const anchor=event.target.closest('a[href]');if(!anchor||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||anchor.hasAttribute('download')||anchor.target==='_blank'||anchor.hasAttribute('data-scene')||anchor.hasAttribute('data-node-slide'))return;
  let url=validLocal(anchor.href);if(!url)return;const next=kindOf(url);if(!next)return;
  if(url.pathname===location.pathname){skipIntro();return;}
+ if(next==='contact'){event.preventDefault();remove(HANDOFF);location.assign(url.href);return;}
  let isReturn=data.kind==='project'&&(next==='works'||anchor.hasAttribute('data-journey-return'));
  let project=anchor.dataset.yarnProject||(next==='project'?url.pathname.match(/\/(luyi|jd|scifi|eastlake|ai|jinghu)\.html$/)?.[1]:isReturn?data.project:null);
  if(isReturn){const saved=read(RETURN),back=saved&&validLocal(saved.url);if(back&&['home','works'].includes(kindOf(back)))url=back;}
